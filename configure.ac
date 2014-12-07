@@ -979,71 +979,96 @@ AC_SUBST(OCTAVE_LDFLAGS)
 # MATLAB_HOME, MATLAB and MATLAB_MEXSUFFIX variable
 
 AC_ARG_WITH([matlab], AS_HELP_STRING([--without-matlab], [Disable Matlab])
-AS_HELP_STRING([--with-matlab=path], [specify location of matlab installation for the matlab interface.  The "mex" compiler should be in MATLAB_HOME/bin]),[use_matlab=$withval], [use_matlab=yes])
+AS_HELP_STRING([--with-matlab=path], [specify matlab installation for the matlab interface.  The "mex" compiler should be in path/bin]),[use_matlab=$withval], [use_matlab=detect])
 
 # First, check for "--without-matlab" or "--with-matlab=no".
 if test x"${use_matlab}" = xno -o x"${with_alllang}" = xno ; then
    AC_MSG_NOTICE([Disabling Matlab per request])
    MATLAB=
-else   
-
-  if test x"$use_matlab" = xyes; then
-    # Try to detect matlab home automatically
-    AC_MSG_CHECKING([for matlab installation])
-    # First figure out what the name of Matlab is
-    AC_PATH_PROG(MATLAB, [matlab], [])
-    if test  x"$MATLAB" = x; then
-      AC_MSG_RESULT([no, Disabling Matlab])
-    else
-      # follow symbolic link
-      # JDK defined a macro BASIC_REMOVE_SYMBOLIC_LINKS that might be more portable
-      if test -L "$MATLAB"; then
-        # matlab is a symbolic link, follow it
-        MATLAB=`ls -l "$MATLAB" | awk '{print $NF}'`
+else
+  case x"$use_matlab" in
+    xdetect)
+      # Try to detect matlab home automatically
+      AC_MSG_CHECKING([for matlab installation])
+      # First figure out what the name of mex is
+      AC_PATH_PROG(MATLAB_MEX, [mex], [])
+      if test  x"$MATLAB_MEX" = x; then
+        AC_MSG_RESULT([no, Disabling Matlab])
+      else
+        AC_MSG_RESULT([found mex: $MATLAB_MEX])
       fi
-      # strip matlab and bin to find home
-      MATLAB_HOME=`dirname "$MATLAB"`
-      MATLAB_HOME=`dirname "$MATLAB_HOME"`
-      AC_MSG_RESULT([found matlab home: $MATLAB_HOME])
-    fi
-  else
-    MATLAB_HOME="$use_matlab"
-    AC_MSG_RESULT([looking for matlab in: $MATLAB_HOME])
-    AC_PATH_PROG(MATLAB, [matlab], [notfound], [$MATLAB_HOME/bin])
-    if test  x"$MATLAB" = xnotfound; then
-      AC_MSG_RESULT([matlab executable not found, Disabling Matlab])
+    ;;
+    xR2011b-maci64)
+      AC_MSG_RESULT([Using testing matlab configuration: $use_matlab])
       MATLAB=
-    fi
-  fi
+      MATLAB_MEX=
+      MATLAB_CC="gcc"
+      MATLAB_CFLAGS="-fno-common -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -mmacosx-version-min=10.9  -fexceptions -D_GNU_SOURCE -g"
+      MATLAB_CLIBS="-L/Applications/MATLAB_R2011b.app/bin/maci64 -lmx -lmex -lmat -lstdc++"
+      MATLAB_CXX="g++"
+      MATLAB_CXXFLAGS="-fno-common -fexceptions -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -mmacosx-version-min=10.9 -g"
+      MATLAB_CXXLIBS="-L/Applications/MATLAB_R2011b.app/bin/maci64 -lmx -lmex -lmat -lstdc++"
+      MATLAB_LDFLAGS="-Wl,-twolevel_namespace -undefined error -arch x86_64 -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -mmacosx-version-min=10.9 -bundle -Wl,-exported_symbols_list,/Applications/MATLAB_R2011b.app/extern/lib/maci64/mexFunction.map"
+      MATLAB_LDEXTENSION=".mexmaci64"
+    ;;
+    xR2011b-glnxa64)
+      AC_MSG_RESULT([Using testing matlab configuration: $use_matlab])
+      MATLAB=
+      MATLAB_MEX=
+      MATLAB_CC="gcc"
+      MATLAB_CFLAGS="-ansi -D_GNU_SOURCE -fexceptions -fPIC -fno-omit-frame-pointer -pthread -g"
+      MATLAB_CLIBS="-Wl,-rpath-link,$TMW_ROOT/bin/$Arch -lmx -lmex -lmat -lm"
+      MATLAB_CXX="g++"
+      MATLAB_CXXFLAGS="-ansi -D_GNU_SOURCE -fPIC -fno-omit-frame-pointer -pthread -g"
+      MATLAB_CXXLIBS="-Wl,-rpath-link,$TMW_ROOT/bin/$Arch -lmx -lmex -lmat -lm"
+      MATLAB_LDFLAGS="-pthread -shared -Wl,--version-script,$TMW_ROOT/extern/lib/$Arch/$MAPFILE -Wl,--no-undefined"
+      MATLAB_LDEXTENSION=".mexmaci64"
+    ;;
+    *)
+      # got a path from --with-matlab=, look for matlab there
+      MATLAB_MATLAB="$use_matlab"
+      AC_MSG_RESULT([looking for matlab in: $MATLAB_MATLAB])
+      AC_PATH_PROG(MATLAB_MEX, [mex], [notfound], [$MATLAB_MATLAB/bin])
+      if test  x"$MATLAB_MEX" = xnotfound; then
+        AC_MSG_RESULT([mex executable not found, Disabling Matlab])
+        MATLAB_MEX=
+      fi
+    ;;
+  esac
 fi
 
-MATLAB_MEX=
-if test x"$MATLAB" != x; then
-  AC_MSG_CHECKING([for Matlab mex command])
-  AC_PATH_PROG(MATLAB_MEX, [mex], [], [$MATLAB_HOME/bin$PATH_SEPARATOR$PATH])
-  if test x"$MATLAB_MEX" = x; then
-    AC_MSG_WARN([Cannot find mex command. Disabling matlab])
-    MATLAB=
-  fi
+get_mex_option() {
+  mex_option_value=`$MATLAB_MEX -v 2>/dev/null | sed -e 's/^-> *//g' -e 's/^ *//' -e 's/ *= */=/' | grep "^$1=" | sed -e "s/$1=//"`
+  #echo "$1=$mex_option_value"
+  eval "MATLAB_$1=\"$mex_option_value\""
+}
+
+if test x"$MATLAB_MEX" != x; then
+  # populate the variables MATLAB_*
+  get_mex_option MATLAB
+  get_mex_option CC
+  get_mex_option CFLAGS
+  get_mex_option CLIBS
+  get_mex_option CXX
+  get_mex_option CXXFLAGS
+  get_mex_option CXXLIBS
+  get_mex_option LDFLAGS
+  get_mex_option LDEXTENSION
 fi
 
-MATLAB_MEXSUFFIX=
-if test x"$MATLAB" != x; then
-  AC_MSG_CHECKING([for Matlab mexext command])
-  AC_PATH_PROG(MATLAB_MEXEXT, [mexext], [], [$MATLAB_HOME/bin$PATH_SEPARATOR$PATH])
-  if test x"$MATLAB_MEXEXT" = x; then
-    AC_MSG_WARN([Cannot find mexext command. Disabling matlab])
-    MATLAB=
-  else
-    MATLAB_MEXSUFFIX=`"$MATLAB_MEXEXT"`
-    AC_MSG_RESULT([matlab mex suffix: $MATLAB_MEXSUFFIX])
-  fi
-fi
+AC_PATH_PROG(MATLAB, [matlab], [], [$MATLAB_MATLAB/bin])
 
 AC_SUBST(MATLAB)
-AC_SUBST(MATLAB_HOME)
+AC_SUBST(MATLAB_MATLAB)
 AC_SUBST(MATLAB_MEX)
-AC_SUBST(MATLAB_MEXSUFFIX)
+AC_SUBST(MATLAB_CC)
+AC_SUBST(MATLAB_CFLAGS)
+AC_SUBST(MATLAB_CLIBS)
+AC_SUBST(MATLAB_CXX)
+AC_SUBST(MATLAB_CXXFLAGS)
+AC_SUBST(MATLAB_CXXLIBS)
+AC_SUBST(MATLAB_LDFLAGS)
+AC_SUBST(MATLAB_LDEXTENSION)
 
 #----------------------------------------------------------------
 # Look for java
@@ -2735,10 +2760,10 @@ AC_CONFIG_FILES([
     Examples/test-suite/guile/Makefile
     Examples/test-suite/java/Makefile
     Examples/test-suite/javascript/Makefile
+    Examples/test-suite/matlab/Makefile
     Examples/test-suite/mzscheme/Makefile
     Examples/test-suite/ocaml/Makefile
     Examples/test-suite/octave/Makefile
-    Examples/test-suite/matlab/Makefile
     Examples/test-suite/perl5/Makefile
     Examples/test-suite/php/Makefile
     Examples/test-suite/pike/Makefile
