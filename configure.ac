@@ -985,36 +985,29 @@ AS_HELP_STRING([--with-matlab=path], [specify location of matlab installation fo
 if test x"${use_matlab}" = xno -o x"${with_alllang}" = xno ; then
    AC_MSG_NOTICE([Disabling Matlab per request])
    MATLAB=
-else   
-
-  if test x"$use_matlab" = xyes; then
-    # Try to detect matlab home automatically
-    AC_MSG_CHECKING([for matlab installation])
-    # First figure out what the name of Matlab is
-    AC_PATH_PROG(MATLAB, [matlab], [])
-    if test  x"$MATLAB" = x; then
-      AC_MSG_RESULT([no, Disabling Matlab])
-    else
-      # follow symbolic link
-      # JDK defined a macro BASIC_REMOVE_SYMBOLIC_LINKS that might be more portable
-      if test -L "$MATLAB"; then
-        # matlab is a symbolic link, follow it
-        MATLAB=`ls -l "$MATLAB" | awk '{print $NF}'`
-      fi
-      # strip matlab and bin to find home
-      MATLAB_HOME=`dirname "$MATLAB"`
-      MATLAB_HOME=`dirname "$MATLAB_HOME"`
-      AC_MSG_RESULT([found matlab home: $MATLAB_HOME])
-    fi
-  else
-    MATLAB_HOME="$use_matlab"
-    AC_MSG_RESULT([looking for matlab in: $MATLAB_HOME])
-    AC_PATH_PROG(MATLAB, [matlab], [notfound], [$MATLAB_HOME/bin])
-    if test  x"$MATLAB" = xnotfound; then
-      AC_MSG_RESULT([matlab executable not found, Disabling Matlab])
-      MATLAB=
-    fi
+elif test x"$use_matlab" = xyes; then
+  # Try to detect matlab home automatically
+  AC_MSG_CHECKING([for matlab installation])
+  # First figure out what the name of Matlab is
+  AC_PATH_PROG(MATLAB, [matlab], [])
+  if test  x"$MATLAB" = x; then
+    AC_MSG_RESULT([no, Disabling Matlab])
   fi
+else
+  # look for Matlab in the given directory
+  MATLAB_HOME="$use_matlab"
+  AC_MSG_RESULT([looking for matlab in: $MATLAB_HOME])
+  AC_PATH_PROG(MATLAB, [matlab], [notfound], [$MATLAB_HOME/bin])
+  if test  x"$MATLAB" = xnotfound; then
+    AC_MSG_RESULT([matlab executable not found, Disabling Matlab])
+    MATLAB=
+  fi
+fi
+
+# ask matlab where is home
+if test x"$MATLAB" != x; then
+  MATLAB_HOME=`$MATLAB -e | grep "^MATLAB=" | sed -e 's/^MATLAB=//'`
+  AC_MSG_RESULT([found matlab home: $MATLAB_HOME])
 fi
 
 MATLAB_MEX=
