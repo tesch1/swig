@@ -23,6 +23,8 @@ matrix:
     - compiler: gcc
       env: SWIGLANG=lua
     - compiler: gcc
+      env: SWIGLANG=matlab
+    - compiler: gcc
       env: SWIGLANG=octave SWIGJOBS=-j4
     - compiler: gcc
       env: SWIGLANG=perl5
@@ -76,6 +78,7 @@ before_install:
           ["java"]="-Werror -std=gnu89 -fdiagnostics-show-option -pedantic -Wno-long-long -Wreturn-type"
     ["javascript"]="-Werror -std=gnu89 -fdiagnostics-show-option -pedantic -Wno-long-long -Wreturn-type"
            ["lua"]="-Werror -std=gnu89 -fdiagnostics-show-option -pedantic -Wno-long-long -Wreturn-type"
+        ["matlab"]="-Werror -std=gnu89 -fdiagnostics-show-option -pedantic -Wno-long-long -Wreturn-type"
         ["octave"]="-Werror -std=gnu89 -fdiagnostics-show-option -pedantic -Wno-long-long -Wreturn-type"
          ["perl5"]="-Werror -std=gnu89 -fdiagnostics-show-option -Wno-long-long -Wreturn-type"
            ["php"]="-Werror -std=gnu89 -fdiagnostics-show-option -Wno-long-long -Wreturn-type"
@@ -90,6 +93,7 @@ before_install:
           ["java"]="-Werror -std=c++98 -fdiagnostics-show-option -pedantic -Wno-long-long -Wreturn-type"
     ["javascript"]="-Werror -std=c++98 -fdiagnostics-show-option -pedantic -Wno-long-long -Wreturn-type"
            ["lua"]="-Werror -std=c++98 -fdiagnostics-show-option -pedantic -Wno-long-long -Wreturn-type"
+        ["matlab"]="-Werror -std=c++98 -fdiagnostics-show-option -Wno-long-long -Wreturn-type"
         ["octave"]="-Werror -std=c++98 -fdiagnostics-show-option -Wno-long-long -Wreturn-type"
          ["perl5"]="-Werror -std=c++98 -fdiagnostics-show-option -Wno-long-long -Wreturn-type"
            ["php"]="-Werror -std=c++98 -fdiagnostics-show-option -pedantic -Wno-long-long -Wreturn-type"
@@ -118,4 +122,4 @@ script:
   - echo -en 'travis_fold:end:script.3\\r'
 branches:
   only:
-    - master
+    - matlab
