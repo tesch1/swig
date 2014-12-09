@@ -976,7 +976,7 @@ AC_SUBST(OCTAVE_LDFLAGS)
 #----------------------------------------------------------------
 
 # Try to detect if there is matlab installed on the system and set the
-# MATLAB_HOME, MATLAB and MATLAB_MEXSUFFIX variable
+# MATLAB_MATLAB, MATLAB and MATLAB_MEXSUFFIX variable
 
 AC_ARG_WITH([matlab], AS_HELP_STRING([--without-matlab], [Disable Matlab])
 AS_HELP_STRING([--with-matlab=path], [specify matlab installation for the matlab interface.  The "mex" compiler should be in path/bin]),[use_matlab=$withval], [use_matlab=detect])
@@ -987,10 +987,11 @@ if test x"${use_matlab}" = xno -o x"${with_alllang}" = xno ; then
    MATLAB=
 else
   case x"$use_matlab" in
-    xdetect)
+    xdetect|xyes)
       # Try to detect matlab home automatically
       AC_MSG_CHECKING([for matlab installation])
       # First figure out what the name of mex is
+      # TODO: try to find matlab binary, run it with -e to get MATLAB env var
       AC_PATH_PROG(MATLAB_MEX, [mex], [])
       if test  x"$MATLAB_MEX" = x; then
         AC_MSG_RESULT([no, Disabling Matlab])
@@ -1000,7 +1001,7 @@ else
     ;;
     xR2011b-maci64)
       AC_MSG_RESULT([Using testing matlab configuration: $use_matlab])
-      MATLAB=
+      MATLAB=echo
       MATLAB_MEX=
       MATLAB_CC="gcc"
       MATLAB_CFLAGS="-fno-common -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -mmacosx-version-min=10.9  -fexceptions -D_GNU_SOURCE -g"
@@ -1013,7 +1014,7 @@ else
     ;;
     xR2011b-glnxa64)
       AC_MSG_RESULT([Using testing matlab configuration: $use_matlab])
-      MATLAB=
+      MATLAB=echo
       MATLAB_MEX=
       MATLAB_CC="gcc"
       MATLAB_CFLAGS="-ansi -D_GNU_SOURCE -fexceptions -fPIC -fno-omit-frame-pointer -pthread -g"
@@ -1054,9 +1055,8 @@ if test x"$MATLAB_MEX" != x; then
   get_mex_option CXXLIBS
   get_mex_option LDFLAGS
   get_mex_option LDEXTENSION
+  AC_PATH_PROG(MATLAB, [matlab], [], [$MATLAB_MATLAB/bin])
 fi
-
-AC_PATH_PROG(MATLAB, [matlab], [], [$MATLAB_MATLAB/bin])
 
 AC_SUBST(MATLAB)
 AC_SUBST(MATLAB_MATLAB)
