@@ -1009,6 +1009,7 @@ else
       MATLAB_CXX="g++"
       MATLAB_CXXFLAGS="-fno-common -fexceptions -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -mmacosx-version-min=10.9 -g"
       MATLAB_CXXLIBS="-L/Applications/MATLAB_R2011b.app/bin/maci64 -lmx -lmex -lmat -lstdc++"
+      MATLAB_LD="gcc"
       MATLAB_LDFLAGS="-Wl,-twolevel_namespace -undefined error -arch x86_64 -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -mmacosx-version-min=10.9 -bundle -Wl,-exported_symbols_list,/Applications/MATLAB_R2011b.app/extern/lib/maci64/mexFunction.map"
       MATLAB_LDEXTENSION=".mexmaci64"
     ;;
@@ -1022,6 +1023,7 @@ else
       MATLAB_CXX="g++"
       MATLAB_CXXFLAGS="-ansi -D_GNU_SOURCE -fPIC -fno-omit-frame-pointer -pthread -g"
       MATLAB_CXXLIBS="-Wl,-rpath-link,$TMW_ROOT/bin/$Arch -lmx -lmex -lmat -lm"
+      MATLAB_LD="gcc"
       MATLAB_LDFLAGS="-pthread -shared -Wl,--version-script,$TMW_ROOT/extern/lib/$Arch/$MAPFILE -Wl,--no-undefined"
       MATLAB_LDEXTENSION=".mexmaci64"
     ;;
@@ -1040,7 +1042,7 @@ fi
 
 get_mex_option() {
   mex_option_value=`$MATLAB_MEX -v 2>/dev/null | sed -e 's/^-> *//g' -e 's/^ *//' -e 's/ *= */=/' | grep "^$1=" | sed -e "s/$1=//"`
-  #echo "$1=$mex_option_value"
+  #echo "MATLAB_$1=$mex_option_value"
   eval "MATLAB_$1=\"$mex_option_value\""
 }
 
@@ -1054,6 +1056,7 @@ if test x"$MATLAB_MEX" != x; then
   get_mex_option CXXFLAGS
   get_mex_option CXXLIBS
   get_mex_option LDFLAGS
+  get_mex_option LD
   get_mex_option LDEXTENSION
   AC_PATH_PROG(MATLAB, [matlab], [], [$MATLAB_MATLAB/bin])
 fi
@@ -1067,6 +1070,7 @@ AC_SUBST(MATLAB_CLIBS)
 AC_SUBST(MATLAB_CXX)
 AC_SUBST(MATLAB_CXXFLAGS)
 AC_SUBST(MATLAB_CXXLIBS)
+AC_SUBST(MATLAB_LD)
 AC_SUBST(MATLAB_LDFLAGS)
 AC_SUBST(MATLAB_LDEXTENSION)
 
