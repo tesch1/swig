@@ -524,7 +524,7 @@ matlab_version:
 # -----------------------------------------------------------------
 
 matlab_clean:
-	rm -f *_wrap* *~
+	rm -f *_wrap* *~ *_wrap.o SwigRef.m
 	rm -rf \+*
 	rm -f *.@OBJEXT@ *@SO@ *$(MATLAB_LDEXTENSION)
 

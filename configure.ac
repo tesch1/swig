@@ -1024,13 +1024,13 @@ else
       MATLAB="echo matlab-shim-$use_matlab"
       MATLAB_MEX=
       MATLAB_CC="gcc"
-      MATLAB_CFLAGS="\$(MATLAB_SHIM_INCLUDE) -fno-common -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -mmacosx-version-min=10.9  -fexceptions -D_GNU_SOURCE -g -I${ac_abs_top_srcdir}/Examples/test-suite/testshim"
-      MATLAB_CLIBS="-L/Applications/MATLAB_R2011b.app/bin/maci64 -lmx -lmex -lmat -lstdc++"
+      MATLAB_CFLAGS="\$(MATLAB_SHIM_INCLUDE) -fno-common -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -mmacosx-version-min=10.9  -fexceptions -D_GNU_SOURCE -g "
+      MATLAB_CLIBS="-lstdc++"
       MATLAB_CXX="g++"
       MATLAB_CXXFLAGS="\$(MATLAB_SHIM_INCLUDE) -fno-common -fexceptions -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -mmacosx-version-min=10.9 -g "
-      MATLAB_CXXLIBS="-L/Applications/MATLAB_R2011b.app/bin/maci64 -lmx -lmex -lmat -lstdc++"
+      MATLAB_CXXLIBS=" -lstdc++"
       MATLAB_LD="gcc"
-      MATLAB_LDFLAGS="-Wl,-twolevel_namespace -undefined error -arch x86_64 -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -mmacosx-version-min=10.9 -bundle -Wl,-exported_symbols_list,/Applications/MATLAB_R2011b.app/extern/lib/maci64/mexFunction.map"
+      MATLAB_LDFLAGS="-Wl,-twolevel_namespace -undefined error -arch x86_64 -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -mmacosx-version-min=10.9 -bundle "
       MATLAB_LDEXTENSION=".mexmaci64"
     ;;
     xR2011b-glnxa64)
@@ -1038,13 +1038,13 @@ else
       MATLAB="echo matlab-shim-$use_matlab"
       MATLAB_MEX=
       MATLAB_CC="gcc"
-      MATLAB_CFLAGS="-ansi -D_GNU_SOURCE -fexceptions -fPIC -fno-omit-frame-pointer -pthread -g"
-      MATLAB_CLIBS="-Wl,-rpath-link,$TMW_ROOT/bin/$Arch -lmx -lmex -lmat -lm"
+      MATLAB_CFLAGS="\$(MATLAB_SHIM_INCLUDE) -ansi -D_GNU_SOURCE -fexceptions -fPIC -fno-omit-frame-pointer -pthread -g"
+      MATLAB_CLIBS="-lm"
       MATLAB_CXX="g++"
-      MATLAB_CXXFLAGS="-ansi -D_GNU_SOURCE -fPIC -fno-omit-frame-pointer -pthread -g"
-      MATLAB_CXXLIBS="-Wl,-rpath-link,$TMW_ROOT/bin/$Arch -lmx -lmex -lmat -lm"
+      MATLAB_CXXFLAGS="\$(MATLAB_SHIM_INCLUDE) -ansi -D_GNU_SOURCE -fPIC -fno-omit-frame-pointer -pthread -g"
+      MATLAB_CXXLIBS="-lm"
       MATLAB_LD="gcc"
-      MATLAB_LDFLAGS="-pthread -shared -Wl,--version-script,$TMW_ROOT/extern/lib/$Arch/$MAPFILE -Wl,--no-undefined"
+      MATLAB_LDFLAGS="-pthread -shared -Wl,--no-undefined"
       MATLAB_LDEXTENSION=".mexmaci64"
     ;;
     *)
