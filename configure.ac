@@ -1043,7 +1043,7 @@ else
       MATLAB_CXX="g++"
       MATLAB_CXXFLAGS="\$(MATLAB_SHIM_INCLUDE) -ansi -D_GNU_SOURCE -fPIC -fno-omit-frame-pointer -pthread -g"
       MATLAB_CXXLIBS="-lm"
-      MATLAB_LD="gcc"
+      MATLAB_LD="g++"
       MATLAB_LDFLAGS="-pthread -shared -Wl,--no-undefined"
       MATLAB_LDEXTENSION=".mexmaci64"
     ;;
