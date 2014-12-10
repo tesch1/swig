@@ -976,10 +976,24 @@ AC_SUBST(OCTAVE_LDFLAGS)
 #----------------------------------------------------------------
 
 # Try to detect if there is matlab installed on the system and set the
-# MATLAB_MATLAB, MATLAB and MATLAB_MEXSUFFIX variable
+# MATLAB_* variables needed to build mex-extension binaries
 
 AC_ARG_WITH([matlab], AS_HELP_STRING([--without-matlab], [Disable Matlab])
 AS_HELP_STRING([--with-matlab=path], [specify matlab installation for the matlab interface.  The "mex" compiler should be in path/bin]),[use_matlab=$withval], [use_matlab=detect])
+
+# get an option value from mex
+get_mex_option() {
+  mex_option_value=`$MATLAB_MEX -v 2>/dev/null | sed -e 's/^-> *//g' -e 's/^ *//' -e 's/ *= */=/' | grep "^$1=" | sed -e "s/$1=//"`
+  #echo "MATLAB_$1=$mex_option_value"
+  eval "MATLAB_$1=\"$mex_option_value\""
+}
+
+# get an environment variable from matlab
+get_matlab_env() {
+  matlab_env_value=`$MATLAB -e 2>/dev/null | grep "^$1=" | sed -e "s/$1=//"`
+  #echo "MATLAB_$1=$mex_option_value"
+  eval "MATLAB_$1=\"$matlab_env_value\""
+}
 
 # First, check for "--without-matlab" or "--with-matlab=no".
 if test x"${use_matlab}" = xno -o x"${with_alllang}" = xno ; then
@@ -994,20 +1008,26 @@ else
       # TODO: try to find matlab binary, run it with -e to get MATLAB env var
       AC_PATH_PROG(MATLAB_MEX, [mex], [])
       if test  x"$MATLAB_MEX" = x; then
-        AC_MSG_RESULT([no, Disabling Matlab])
-      else
+        # couldn't find mex in path, try matlab
+        AC_PATH_PROG(MATLAB, [matlab], [])
+        if test  x"$MATLAB" = x; then
+          AC_MSG_RESULT([no, Disabling Matlab])
+        else
+          get_matlab_env MATLAB
+          MATLAB_MEX="${MATLAB_MATLAB}/bin/mex"
+        fi
         AC_MSG_RESULT([found mex: $MATLAB_MEX])
       fi
     ;;
     xR2011b-maci64)
       AC_MSG_RESULT([Using testing matlab configuration: $use_matlab])
-      MATLAB=echo
+      MATLAB="echo matlab-shim-$use_matlab"
       MATLAB_MEX=
       MATLAB_CC="gcc"
-      MATLAB_CFLAGS="-fno-common -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -mmacosx-version-min=10.9  -fexceptions -D_GNU_SOURCE -g"
+      MATLAB_CFLAGS="\$(MATLAB_SHIM_INCLUDE) -fno-common -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -mmacosx-version-min=10.9  -fexceptions -D_GNU_SOURCE -g -I${ac_abs_top_srcdir}/Examples/test-suite/testshim"
       MATLAB_CLIBS="-L/Applications/MATLAB_R2011b.app/bin/maci64 -lmx -lmex -lmat -lstdc++"
       MATLAB_CXX="g++"
-      MATLAB_CXXFLAGS="-fno-common -fexceptions -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -mmacosx-version-min=10.9 -g"
+      MATLAB_CXXFLAGS="\$(MATLAB_SHIM_INCLUDE) -fno-common -fexceptions -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -mmacosx-version-min=10.9 -g "
       MATLAB_CXXLIBS="-L/Applications/MATLAB_R2011b.app/bin/maci64 -lmx -lmex -lmat -lstdc++"
       MATLAB_LD="gcc"
       MATLAB_LDFLAGS="-Wl,-twolevel_namespace -undefined error -arch x86_64 -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -mmacosx-version-min=10.9 -bundle -Wl,-exported_symbols_list,/Applications/MATLAB_R2011b.app/extern/lib/maci64/mexFunction.map"
@@ -1015,7 +1035,7 @@ else
     ;;
     xR2011b-glnxa64)
       AC_MSG_RESULT([Using testing matlab configuration: $use_matlab])
-      MATLAB=echo
+      MATLAB="echo matlab-shim-$use_matlab"
       MATLAB_MEX=
       MATLAB_CC="gcc"
       MATLAB_CFLAGS="-ansi -D_GNU_SOURCE -fexceptions -fPIC -fno-omit-frame-pointer -pthread -g"
@@ -1040,12 +1060,6 @@ else
   esac
 fi
 
-get_mex_option() {
-  mex_option_value=`$MATLAB_MEX -v 2>/dev/null | sed -e 's/^-> *//g' -e 's/^ *//' -e 's/ *= */=/' | grep "^$1=" | sed -e "s/$1=//"`
-  #echo "MATLAB_$1=$mex_option_value"
-  eval "MATLAB_$1=\"$mex_option_value\""
-}
-
 if test x"$MATLAB_MEX" != x; then
   # populate the variables MATLAB_*
   get_mex_option MATLAB
@@ -1059,6 +1073,8 @@ if test x"$MATLAB_MEX" != x; then
   get_mex_option LD
   get_mex_option LDEXTENSION
   AC_PATH_PROG(MATLAB, [matlab], [], [$MATLAB_MATLAB/bin])
+  MATLAB_CFLAGS="-I${MATLAB_MATLAB}/extern/include ${MATLAB_CFLAGS}"
+  MATLAB_CXXFLAGS="-I${MATLAB_MATLAB}/extern/include ${MATLAB_CXXFLAGS}"
 fi
 
 AC_SUBST(MATLAB)

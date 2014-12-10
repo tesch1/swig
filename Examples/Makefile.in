@@ -468,13 +468,14 @@ octave_clean:
 ##################################################################
 
 # Make sure these locate your Matlab installation
+MATLAB_SHIM_INCLUDE=-I@abs_srcdir@/test-suite/matlab/testshim
 MATLAB 	        = @MATLAB@ -nodisplay -nosplash -nojvm
 MATLAB_MEX      = @MATLAB_MEX@
 MATLAB_CC       = @MATLAB_CC@
-MATLAB_CFLAGS   = -I@MATLAB_MATLAB@/extern/include @MATLAB_CFLAGS@
+MATLAB_CFLAGS   = @MATLAB_CFLAGS@
 MATLAB_CLIBS    = @MATLAB_CLIBS@
 MATLAB_CXX      = @MATLAB_CXX@
-MATLAB_CXXFLAGS = -I@MATLAB_MATLAB@/extern/include @MATLAB_CXXFLAGS@
+MATLAB_CXXFLAGS = @MATLAB_CXXFLAGS@
 MATLAB_CXXLIBS  = @MATLAB_CXXLIBS@
 MATLAB_LD       = @MATLAB_LD@
 MATLAB_LDFLAGS  = @MATLAB_LDFLAGS@
@@ -488,10 +489,10 @@ MATLAB_SCRIPT = $(SRCDIR)$(RUNME)
 
 matlab: $(SRCDIR_SRCS)
 	$(SWIG) -matlab $(SWIGOPT) -o $(ISRCS) $(INTERFACEPATH)
-	$(MATLAB_CC) $(MATLAB_CFLAGS) $(CFLAGS) $(ISRCS) $(SRCDIR_SRCS) $(SRCDIR_CSRCS) \
-		$(INCLUDES) -c -o $(TARGET)_wrap$(MATLAB_LDEXTENSION).o
+	$(MATLAB_CC) $(MATLAB_CFLAGS) $(CFLAGS) $(ISRCS) $(SRCDIR_SRCS) \
+		$(SRCDIR_CSRCS) $(INCLUDES) -c -o $(TARGET)_wrap.o
 	$(MATLAB_LD) $(MATLAB_LDFLAGS) $(MATLAB_CLIBS) $(LDFLAGS) $(LIBS) \
-		$(TARGET)_wrap$(MATLAB_LDEXTENSION).o -o $(TARGET)_wrap$(MATLAB_LDEXTENSION)
+		$(TARGET)_wrap.o -o $(TARGET)_wrap$(MATLAB_LDEXTENSION)
 
 # -----------------------------------------------------------------
 # Build a C++ dynamically loadable module
@@ -499,10 +500,10 @@ matlab: $(SRCDIR_SRCS)
 
 matlab_cpp: $(SRCDIR_SRCS)
 	$(SWIG) -c++ -matlab $(SWIGOPT) -o $(ICXXSRCS) $(INTERFACEPATH)
-	$(MATLAB_CXX) $(MATLAB_CXXFLAGS) $(CXXFLAGS) $(ICXXSRCS) $(SRCDIR_SRCS) $(SRCDIR_CXXSRCS) \
-		$(INCLUDES) -c -o $(TARGET)_wrap$(MATLAB_LDEXTENSION).o
+	$(MATLAB_CXX) $(MATLAB_CXXFLAGS) $(CXXFLAGS) $(ICXXSRCS) $(SRCDIR_SRCS) \
+		$(SRCDIR_CXXSRCS) $(INCLUDES) -c -o $(TARGET)_wrap.o
 	$(MATLAB_LD) $(MATLAB_LDFLAGS) $(MATLAB_CXXLIBS) $(LDFLAGS) $(LIBS) \
-		$(TARGET)_wrap$(MATLAB_LDEXTENSION).o -o $(TARGET)_wrap$(MATLAB_LDEXTENSION)
+		$(TARGET)_wrap.o -o $(TARGET)_wrap$(MATLAB_LDEXTENSION)
 
 # -----------------------------------------------------------------
 # Running an Matlab example
@@ -525,7 +526,7 @@ matlab_version:
 matlab_clean:
 	rm -f *_wrap* *~
 	rm -rf \+*
-	rm -f *.@OBJEXT@ *@SO@ *$(MATLAB_MEXSUFFIX)
+	rm -f *.@OBJEXT@ *@SO@ *$(MATLAB_LDEXTENSION)
 
 ##################################################################
 #####                       GUILE                           ######
